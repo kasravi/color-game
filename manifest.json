@@ -1,0 +1,22 @@
+{
+    "name": "Color Game",
+    "short_name": "color-game",
+    "id": "/color-game/",
+    "start_url": "/color-game/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#000000",
+    "description": "A simple color game",
+    "icons": [
+      {
+        "src": "icon-192x192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "icon-512x512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }
