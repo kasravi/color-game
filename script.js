@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     let selectedVial = null;
-    
+    let done = ()=>false;
+    let colorNum = 5;
+
     const generate =(seed)=>{
         let rng = new Math.seedrandom(seed);
         const container = document.getElementById('vialContainer');
@@ -8,9 +10,9 @@ document.addEventListener('DOMContentLoaded', function() {
             container.removeChild(container.lastChild);
         }
         let vialNum = 14;
-        let colorNum = 5;
+        colorNum = 5;
         let vialHeight = 140;
-        let vialWidth = 30;
+        let vialWidth = 40;
 
         let colors = palette('mpn65', vialNum-2).reduce((a,i)=>a.concat(Array(colorNum).fill(i)),[]);
 
@@ -53,6 +55,8 @@ document.addEventListener('DOMContentLoaded', function() {
             container.appendChild(vial);
         }
         document.getElementById("nextBtn").style.display = "none";
+        done = () => [...document.getElementsByClassName('vial')]
+            .every(f=>f.children.lenght === colorNum && allEqual([...f.children].map(c=>c.style.backgroundColor)))
     }
 
     const allEqual = arr => arr.every(val => val === arr[0]);
@@ -61,9 +65,8 @@ document.addEventListener('DOMContentLoaded', function() {
         vial.style.zIndex = 0;
         vial.style.transition = 'transform 0.5s';
         vial.style.transform = `translate(0, 0) rotate(0deg)`;
-        let done = [...document.getElementsByClassName('vial')]
-            .every(f=>allEqual([...f.children].map(c=>c.style.backgroundColor)));
-        if(done){
+        
+        if(done()){
             confetti({
                 particleCount: 100,
                 spread: 70,
@@ -94,7 +97,9 @@ document.addEventListener('DOMContentLoaded', function() {
             toAdd.classList.remove('adding');
             toRemove.classList.remove('removing');
             fromVial.removeChild(fromVial.lastChild);
-            if(fromVial.lastChild && fromVial.lastChild.style.backgroundColor === toAdd.style.backgroundColor){
+            if(fromVial.lastChild && 
+                toVial.children.length<colorNum && 
+                fromVial.lastChild.style.backgroundColor === toAdd.style.backgroundColor){
                 moveTopColor(fromVial, toVial)
             }else{
                 moveBackVial(fromVial)
@@ -107,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const fromRect = fromVial.getBoundingClientRect();
         const toRect = toVial.getBoundingClientRect();
         const translateX = toRect.left - fromRect.left - fromRect.width/2;
-        const translateY = toRect.top - fromRect.top - fromRect.width - (translateX > 0 ? 0: (fromRect.height/2)) - (Math.random()-0.5)*20; // Move to 20px above the second vial
+        const translateY = toRect.top - fromRect.top - fromRect.width - (translateX > 0 ? 0: (fromRect.height/2)) - (Math.random()-0.5)*20;
         const direction = translateX < 0 ? 'counterclockwise' : 'clockwise';
         
         fromVial.style.zIndex = 1000;
