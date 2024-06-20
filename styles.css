@@ -149,3 +149,11 @@ body {
     font-size: 1.25rem;
   }
 }
+
+.level {
+    position: fixed;
+    font-size: 20rem;
+    bottom: -29rem;
+    color: rgba(1, 1, 1, 0.2);
+    left: 0;
+}

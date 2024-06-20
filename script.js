@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         
-
+        document.getElementById("levelP").innerHTML = seed;
         document.getElementById("nextBtn").style.display = "none";
         done = () => [...document.getElementsByClassName('vial')].filter(f=>f.dataset.cap == colorNum && f.children.length>0)
             .every(f=>f.children.length === colorNum && allEqual([...f.children].map(c=>c.style.backgroundColor)))
