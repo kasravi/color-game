@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     let selectedVial = null;
     let done = ()=>false;
-    let colorNum = 5;
 
     const generate =(seed)=>{
         let rng = new Math.seedrandom(seed);
@@ -10,28 +9,52 @@ document.addEventListener('DOMContentLoaded', function() {
             container.removeChild(container.lastChild);
         }
         let vialNum = 14;
-        colorNum = 5;
+        let colorNum = 5;
         let vialHeight = 140;
         let vialWidth = 40;
+        let auxVialNum = 1;
 
         let colors = palette('mpn65', vialNum-2).reduce((a,i)=>a.concat(Array(colorNum).fill(i)),[]);
 
-        for (let i = 0; i < vialNum; i++) {
+        for (let i = 0; i < vialNum+auxVialNum; i++) {
             const vial = document.createElement('div');
             vial.style.height = vialHeight+"px";
             vial.style.width = vialWidth+"px";
             vial.classList.add('vial');
-
-            if(i<vialNum-2)
-            for (let j = 0; j < colorNum; j++) {
-                const colorSegment = document.createElement('div');
-                colorSegment.classList.add('color-segment');
-                const colorIndex = Math.floor(rng() * colors.length);
-                const randomColor = "#"+colors[colorIndex];
-                colors = colors.filter((c,i)=>i!==colorIndex);
-                colorSegment.style.backgroundColor = randomColor;
-                colorSegment.style.maxHeight = (vialHeight/colorNum)+"px";
-                vial.appendChild(colorSegment);
+            vial.dataset.cap = colorNum;
+            vial.dataset.maxCap = colorNum;
+            if(i>=vialNum){
+                vial.id = "aux-vial";
+                vial.style.height = (vialHeight/5)+"px";
+                vial.style.width = vialWidth+"px";
+                vial.style.borderColor = "#737373"
+                vial.style.backgroundColor = "#737373"
+                vial.dataset.cap = 0;
+                const addButton = document.createElement('button');
+                addButton.innerHTML = "+";
+                addButton.classList.add("auxVialButton");
+                addButton.addEventListener("click",()=>{
+                    let cap = parseInt(vial.dataset.cap);
+                    if(cap>=colorNum){
+                        return
+                    }
+                    vial.dataset.cap = cap+1;
+                    vial.style.height = ((cap+1)*vialHeight/5)+"px";
+                    vial.style.borderColor = "#000000"
+                    vial.style.backgroundColor = "transparent"
+                })
+                container.appendChild(addButton);
+            } else if(i<vialNum-2){
+                for (let j = 0; j < colorNum; j++) {
+                    const colorSegment = document.createElement('div');
+                    colorSegment.classList.add('color-segment');
+                    const colorIndex = Math.floor(rng() * colors.length);
+                    const randomColor = "#"+colors[colorIndex];
+                    colors = colors.filter((c,i)=>i!==colorIndex);
+                    colorSegment.style.backgroundColor = randomColor;
+                    colorSegment.style.maxHeight = (vialHeight/colorNum)+"px";
+                    vial.appendChild(colorSegment);
+                }
             }
 
             vial.addEventListener('click', function() {
@@ -42,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     vial.classList.remove('move-up');
                     selectedVial = null;
                 } else {
-                    if(vial.children.length<colorNum && 
+                    if(vial.children.length<vial.dataset.cap && 
                     (!vial.lastChild || 
                         vial.lastChild.style.backgroundColor === selectedVial.lastChild.style.backgroundColor)){
                         moveAndRotateVial(selectedVial, vial);
@@ -54,9 +77,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
             container.appendChild(vial);
         }
+
+        
+
         document.getElementById("nextBtn").style.display = "none";
-        done = () => [...document.getElementsByClassName('vial')]
-            .every(f=>f.children.lenght === colorNum && allEqual([...f.children].map(c=>c.style.backgroundColor)))
+        done = () => [...document.getElementsByClassName('vial')].filter(f=>f.dataset.cap == colorNum && f.children.length>0)
+            .every(f=>f.children.length === colorNum && allEqual([...f.children].map(c=>c.style.backgroundColor)))
     }
 
     const allEqual = arr => arr.every(val => val === arr[0]);
@@ -98,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
             toRemove.classList.remove('removing');
             fromVial.removeChild(fromVial.lastChild);
             if(fromVial.lastChild && 
-                toVial.children.length<colorNum && 
+                toVial.children.length<toVial.dataset.cap && 
                 fromVial.lastChild.style.backgroundColor === toAdd.style.backgroundColor){
                 moveTopColor(fromVial, toVial)
             }else{

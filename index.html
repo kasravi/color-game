@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <div class="installContainer">
+        <button id="install-button" class="installBtn button-53">Install</button>
+    </div>
     <div class="container" id="vialContainer"></div>
     <div class="nextContainer">
         <button class="nextBtn button-53" id="nextBtn">Next</button>
@@ -31,13 +34,39 @@
     <script src="script.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/service-worker.js')
-                .then(registration => {
-                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                }).catch(error => {
-                    console.log('ServiceWorker registration failed: ', error);
-                });
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then((reg) => console.log('Service worker registered.', reg))
+            .catch((err) => console.log('Service worker registration failed.', err));
+        });
+      }
+
+      let deferredPrompt;
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        showInstallPrompt();
+      });
+
+      function showInstallPrompt() {
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+          return;
         }
+        const installButton = document.querySelector('#install-button');
+        installButton.style.display = 'block';
+        installButton.addEventListener('click', () => {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('User accepted the install prompt.');
+            } else {
+              console.log('User dismissed the install prompt.');
+            }
+            deferredPrompt = null;
+          });
+        });
+      }
     </script>
   </body>
 </html>
