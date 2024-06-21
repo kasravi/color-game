@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     let selectedVial = null;
     let done = ()=>false;
-
     const generate =(seed)=>{
         let rng = new Math.seedrandom(seed);
         const container = document.getElementById('vialContainer');
@@ -34,14 +33,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 addButton.innerHTML = "+";
                 addButton.classList.add("auxVialButton");
                 addButton.addEventListener("click",()=>{
-                    let cap = parseInt(vial.dataset.cap);
-                    if(cap>=colorNum){
-                        return
-                    }
-                    vial.dataset.cap = cap+1;
-                    vial.style.height = ((cap+1)*vialHeight/5)+"px";
-                    vial.style.borderColor = "#000000"
-                    vial.style.backgroundColor = "transparent"
+                    checkEyeClosed().then(()=>{
+                        let cap = parseInt(vial.dataset.cap);
+                        if(cap>=colorNum){
+                            return
+                        }
+                        vial.dataset.cap = cap+1;
+                        vial.style.height = ((cap+1)*vialHeight/5)+"px";
+                        vial.style.borderColor = "#000000"
+                        vial.style.backgroundColor = "transparent"
+                    })
                 })
                 container.appendChild(addButton);
             } else if(i<vialNum-2){
@@ -174,15 +175,105 @@ document.addEventListener('DOMContentLoaded', function() {
         return null;
     }
 
-    
+    //landmark
+    const isEyesClosed = (howlong, timeout)=> new Promise((resolve,reject)=>{
+
+        const videoElement = document.getElementsByClassName('input_video')[0];
+        // const canvasElement = document.getElementsByClassName('output_canvas')[0];
+        // const canvasCtx = canvasElement.getContext('2d');
+        
+        let eyeClosedStart = null;
+        let eyeOpenStart = null;
+        let totalTimeEyesClosed = 0;
+        let totalTimeEyesOpen = 0;
+        
+        function onResults(results) {
+        
+            if (results.multiFaceLandmarks) {
+                for (const landmarks of results.multiFaceLandmarks) {
+                    const leftEye = [landmarks[159], landmarks[145]]; 
+                    const rightEye = [landmarks[386], landmarks[374]]; 
+        
+                    const leftEyeOpen = calculateEyeOpenness(leftEye);
+                    const rightEyeOpen = calculateEyeOpenness(rightEye);
+        
+                    if (leftEyeOpen && rightEyeOpen) {
+                        if (eyeClosedStart) {
+                            totalTimeEyesClosed += Date.now() - eyeClosedStart;
+                            eyeClosedStart = null;
+                        }
+                        if (!eyeOpenStart) {
+                            eyeOpenStart = Date.now();
+                        }
+                    } else {
+                        if (eyeOpenStart) {
+                            totalTimeEyesOpen += Date.now() - eyeOpenStart;
+                            eyeOpenStart = null;
+                        }
+                        if (!eyeClosedStart) {
+                            eyeClosedStart = Date.now();
+                        }
+                    }
+                }
+            }
+            if((totalTimeEyesClosed / 1000) > howlong){
+                camera.stop()
+                resolve();
+            }
+
+            document.getElementById("closed-for").innerHTML = `eyes been closed for  ${totalTimeEyesClosed / 1000} seconds`
+            // console.log(`Total time eyes closed: ${totalTimeEyesClosed / 1000} seconds`);
+            // console.log(`Total time eyes open: ${totalTimeEyesOpen / 1000} seconds`);
+        }
+        
+        function calculateEyeOpenness(eyeLandmarks) {
+            const verticalDist = Math.abs(eyeLandmarks[0].y - eyeLandmarks[1].y)*100;
+            return verticalDist > 1; 
+        }
+        
+        const faceMesh = new FaceMesh({locateFile: (file) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+        }});
+        faceMesh.setOptions({
+            maxNumFaces: 1,
+            refineLandmarks: true,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+        faceMesh.onResults(onResults);
+        
+        const camera = new Camera(videoElement, {
+            onFrame: async () => {
+            await faceMesh.send({image: videoElement});
+            },
+            width: 1280,
+            height: 720
+        });
+        camera.start();
+        setTimeout(()=>resolve(),timeout*1000);
+        })
+        
+    //////
+    const checkEyeClosed = async ()=>{
+        let t = document.getElementById("modal")
+        t.classList.remove('fade-out');
+        t.classList.add('fade-in');
+        await isEyesClosed(10,20);
+        t.classList.add('fade-out');
+        t.classList.remove('fade-in');
+
+    }
+
       if(!getCookie("level")){
         setCookie("level",1);
       }
     generate(parseInt(getCookie("level")));
     document.getElementById("nextBtn").addEventListener("click",()=>{
-        let level = parseInt(getCookie("level"));
-        level++;
-        setCookie("level",level)
-        generate(level);
+        checkEyeClosed().then(()=>{
+            let level = parseInt(getCookie("level"));
+            level++;
+            setCookie("level",level)
+            generate(level);
+        })
     })
 });

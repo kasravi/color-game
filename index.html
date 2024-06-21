@@ -9,9 +9,21 @@
     <link rel="icon" sizes="512x512" href="icon-512x512.png">
     <title>Color Game</title>
     <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
   </head>
   <body>
-    <div class="level">
+    <div class="videoContainer">
+        <video class="input_video" style="display:none"></video>
+      </div>
+
+      <div id="modal" class="modal">
+        <p class="modal-text" id="modal-text">close your eyes for 10 seconds :)</p>
+        <p class="modal-text-sub" id="closed-for"></p>
+      </div>
+      <div class="level">
         <p id="levelP"></p>
     </div>
     <div class="installContainer">
@@ -34,7 +46,7 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     ></script>
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
