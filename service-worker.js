@@ -2,12 +2,12 @@ self.addEventListener('install', event => {
     event.waitUntil(
         caches.open('my-cache').then(cache => {
             return cache.addAll([
-                '/',
-                '/index.html',
-                '/styles.css',
-                '/script.js',
-                '/icon-192x192.png',
-                '/icon-512x512.png'
+                '/color-game/',
+                '/color-game/index.html',
+                '/color-game/styles.css',
+                '/color-game/script.js',
+                '/color-game/icon-192x192.png',
+                '/color-game/icon-512x512.png'
             ]);
         })
     );

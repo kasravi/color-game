@@ -3,35 +3,49 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="icon" sizes="192x192" href="icon-192x192.png">
-    <link rel="icon" sizes="512x512" href="icon-512x512.png">
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" sizes="192x192" href="icon-192x192.png" />
+    <link rel="icon" sizes="512x512" href="icon-512x512.png" />
     <title>Color Game</title>
     <link rel="stylesheet" href="styles.css" />
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"
+      crossorigin="anonymous"
+    ></script>
   </head>
   <body>
     <div class="videoContainer">
-        <video class="input_video" style="display:none"></video>
-      </div>
+      <video class="input_video" style="display: none"></video>
+    </div>
 
-      <div id="modal" class="modal">
-        <p class="modal-text" id="modal-text">close your eyes for 10 seconds :)</p>
-        <p class="modal-text-sub" id="closed-for"></p>
-      </div>
-      <div class="level">
-        <p id="levelP"></p>
+    <div id="modal" class="modal">
+      <p class="modal-text" id="modal-text">
+        close your eyes for 10 seconds :)
+      </p>
+      <p class="modal-text-sub" id="closed-for"></p>
+    </div>
+    <div class="level">
+      <p id="levelP"></p>
     </div>
     <div class="installContainer">
-        <button id="install-button" class="installBtn button-53">Install</button>
+      <button id="install-button" class="installBtn button-53">Install</button>
     </div>
     <div class="container" id="vialContainer"></div>
     <div class="nextContainer">
-        <button class="nextBtn button-53" id="nextBtn">Next</button>
+      <button class="nextBtn button-53" id="nextBtn">Next</button>
     </div>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"
@@ -48,35 +62,38 @@
     ></script>
     <script type="module" src="script.js"></script>
     <script>
-        if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/color-game/service-worker.js')
-            .then((reg) => console.log('Service worker registered.', reg))
-            .catch((err) => console.log('Service worker registration failed.', err));
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/color-game/service-worker.js")
+            .then((reg) => console.log("Service worker registered.", reg))
+            .catch((err) =>
+              console.log("Service worker registration failed.", err)
+            );
         });
       }
 
       let deferredPrompt;
 
-      window.addEventListener('beforeinstallprompt', (e) => {
+      window.addEventListener("beforeinstallprompt", (e) => {
         e.preventDefault();
         deferredPrompt = e;
         showInstallPrompt();
       });
 
       function showInstallPrompt() {
-        if (window.matchMedia('(display-mode: standalone)').matches) {
+        if (window.matchMedia("(display-mode: standalone)").matches) {
           return;
         }
-        const installButton = document.querySelector('#install-button');
-        installButton.style.display = 'block';
-        installButton.addEventListener('click', () => {
+        const installButton = document.querySelector("#install-button");
+        installButton.style.display = "block";
+        installButton.addEventListener("click", () => {
           deferredPrompt.prompt();
           deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-              console.log('User accepted the install prompt.');
+            if (choiceResult.outcome === "accepted") {
+              console.log("User accepted the install prompt.");
             } else {
-              console.log('User dismissed the install prompt.');
+              console.log("User dismissed the install prompt.");
             }
             deferredPrompt = null;
           });
