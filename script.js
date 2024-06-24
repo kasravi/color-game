@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (selectedVial === null) {
       vial.classList.add("move-up");
       selectedVial = vial;
-    } else if (selectedVial === vial) {
+    } else if (selectedVial.id === vial.id) {
       vial.classList.remove("move-up");
       selectedVial = null;
     } else {
@@ -42,6 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     for (let i = 0; i < vialNum + auxVialNum; i++) {
       const vial = document.createElement("div");
+      vial.id = `vial-${i}`;
       vial.style.height = vialHeight + "px";
       vial.style.width = vialWidth + "px";
       vial.classList.add("vial");
