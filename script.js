@@ -152,6 +152,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (
         fromVial.lastChild &&
         toVial.children.length < toVial.dataset.cap &&
+        fromVial.lastChild.dataset.rev === "true" &&
         fromVial.lastChild.style.backgroundColor === toAdd.style.backgroundColor
       ) {
         moveTopColor(fromVial, toVial);
