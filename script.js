@@ -1,6 +1,28 @@
 document.addEventListener("DOMContentLoaded", function () {
   let selectedVial = null;
   let done = () => false;
+
+  const moveVialCallback = (vial) => {
+    if (selectedVial === null) {
+      vial.classList.add("move-up");
+      selectedVial = vial;
+    } else if (selectedVial === vial) {
+      vial.classList.remove("move-up");
+      selectedVial = null;
+    } else {
+      if (
+        vial.children.length < vial.dataset.cap &&
+        (!vial.lastChild ||
+          vial.lastChild.style.backgroundColor ===
+            selectedVial.lastChild.style.backgroundColor)
+      ) {
+        moveAndRotateVial(selectedVial, vial);
+        selectedVial.classList.remove("move-up");
+        selectedVial = null;
+      }
+    }
+  };
+
   const generate = (seed) => {
     let rng = new Math.seedrandom(seed);
     const container = document.getElementById("vialContainer");
@@ -61,26 +83,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
 
-      vial.addEventListener("click", function () {
-        if (selectedVial === null) {
-          vial.classList.add("move-up");
-          selectedVial = vial;
-        } else if (selectedVial === vial) {
-          vial.classList.remove("move-up");
-          selectedVial = null;
-        } else {
-          if (
-            vial.children.length < vial.dataset.cap &&
-            (!vial.lastChild ||
-              vial.lastChild.style.backgroundColor ===
-                selectedVial.lastChild.style.backgroundColor)
-          ) {
-            moveAndRotateVial(selectedVial, vial);
-            selectedVial.classList.remove("move-up");
-            selectedVial = null;
-          }
-        }
-      });
+      vial.addEventListener("click", () => moveVialCallback(vial));
 
       container.appendChild(vial);
     }
@@ -103,6 +106,10 @@ document.addEventListener("DOMContentLoaded", function () {
     vial.style.zIndex = 0;
     vial.style.transition = "transform 0.5s";
     vial.style.transform = `translate(0, 0) rotate(0deg)`;
+
+    vial.addEventListener("animationend", (event) => {
+      vial.addEventListener("click", () => moveVialCallback(vial));
+    });
 
     if (done()) {
       confetti({
@@ -149,6 +156,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function moveAndRotateVial(fromVial, toVial) {
+    fromVial.removeEventListener("click", moveVialCallback);
     const fromRect = fromVial.getBoundingClientRect();
     const toRect = toVial.getBoundingClientRect();
     const translateX = toRect.left - fromRect.left - fromRect.width / 2;
@@ -173,35 +181,19 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Function to set a cookie
-  function setCookie(name, value, ns = "color-sort", days) {
-    let expires = "";
-    if (days) {
-      const date = new Date();
-      date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-      expires = "; expires=" + date.toUTCString();
-    }
-    document.cookie =
-      ns + "-" + name + "=" + (value || "") + expires + "; path=/";
+  function setValueInStorage(name, value, ns = "color-sort") {
+    localStorage.setItem(`${ns}-${name}`, value);
   }
 
   // Function to get a cookie
-  function getCookie(name, ns = "color-sort") {
-    const nameEQ = ns + "-" + name + "=";
-    const ca = document.cookie.split(";");
-    for (let i = 0; i < ca.length; i++) {
-      let c = ca[i];
-      while (c.charAt(0) === " ") c = c.substring(1, c.length);
-      if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-    }
-    return null;
+  function getValueFromStorage(name, ns = "color-sort") {
+    return localStorage.getItem(`${ns}-${name}`);
   }
 
   //landmark
   const isEyesClosed = (howlong, timeout) =>
     new Promise((resolve, reject) => {
       const videoElement = document.getElementsByClassName("input_video")[0];
-      // const canvasElement = document.getElementsByClassName('output_canvas')[0];
-      // const canvasCtx = canvasElement.getContext('2d');
 
       let eyeClosedStart = null;
       let eyeOpenStart = null;
@@ -243,7 +235,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         document.getElementById(
           "closed-for"
-        ).innerHTML = `eyes been closed for  ${
+        ).innerHTML = `your eyes have been closed for  ${
           totalTimeEyesClosed / 1000
         } seconds`;
       }
@@ -274,8 +266,23 @@ document.addEventListener("DOMContentLoaded", function () {
         width: 1280,
         height: 720,
       });
-      camera.start();
-      setTimeout(() => resolve(), timeout * 1000);
+      if (navigator.mediaDevices) {
+        navigator.mediaDevices
+          .getUserMedia({video:true, facingMode: "user"})
+          .then(() => {
+            camera.start();
+          })
+          .catch(() => {
+            console.log("no camera");
+            setTimeout(() => {
+              resolve();
+            }, howlong * 1000);
+          });
+      }
+      setTimeout(() => {
+        camera.stop();
+        resolve();
+      }, timeout * 1000);
     });
 
   //////
@@ -288,15 +295,15 @@ document.addEventListener("DOMContentLoaded", function () {
     t.classList.remove("fade-in");
   };
 
-  if (!getCookie("level")) {
-    setCookie("level", 1);
+  if (!getValueFromStorage("level")) {
+    setValueInStorage("level", 1);
   }
-  generate(parseInt(getCookie("level")));
+  generate(parseInt(getValueFromStorage("level")));
   document.getElementById("nextBtn").addEventListener("click", () => {
     checkEyeClosed().then(() => {
-      let level = parseInt(getCookie("level"));
+      let level = parseInt(getValueFromStorage("level"));
       level++;
-      setCookie("level", level);
+      setValueInStorage("level", level);
       generate(level);
     });
   });

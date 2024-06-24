@@ -5,6 +5,9 @@ body {
   height: 100vh;
   margin: 0;
   background-color: #303030;
+  font-family: ui-sans-serif,system-ui,-apple-system,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+  font-weight: 400;
+  font-style: normal;
 }
 
 .container {
@@ -88,10 +91,10 @@ body {
 
 .installContainer {
   position: fixed;
-  top: 100px;
+  top: 10%;
   left: 50%;
   transform: translate(-50%, 0);
-  z-index: -1;
+  z-index: 1;
 }
 
 #install-button {
@@ -104,11 +107,7 @@ body {
   box-sizing: border-box;
   color: #000000;
   display: flex;
-  font-family: ui-sans-serif, system-ui, -apple-system, system-ui, "Segoe UI",
-    Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   font-size: 1rem;
-  font-weight: 700;
   justify-content: center;
   line-height: 1.75rem;
   padding: 0.75rem 1.65rem;
@@ -170,26 +169,32 @@ body {
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  height: 100vh;
-  width: 100vw;
+  height: 70vh;
+  width: 70vw;
   background-color: #3f3f3f;
-
   opacity: 0;
   transition: fadeIn 1s;
+  transform: rotate(1deg);
+  outline: 1px solid #000;
+    outline-offset: -1rem;
+    background: #3f3f3f;
+    margin:5rem;
 }
 
 .modal-text {
   text-align: center;
-  font-size: 4rem;
+  font-size: 2rem;
   padding: 2rem;
-  color: #c4c4c4;
+  color: #a0a0a0;
 }
+
 .modal-text-sub {
   text-align: center;
   font-size: 1rem;
   padding: 2rem;
   color: #a4a4a4;
 }
+
 .fade-in {
   animation: fadeIn 1s forwards;
 }
@@ -219,3 +224,4 @@ body {
     z-index: 20000;
   }
 }
+
