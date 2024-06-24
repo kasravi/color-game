@@ -12,9 +12,9 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
       if (
         vial.children.length < vial.dataset.cap &&
-        (!vial.lastChild ||
+        (!vial.lastChild || (selectedVial.lastChild &&
           vial.lastChild.style.backgroundColor ===
-            selectedVial.lastChild.style.backgroundColor)
+            selectedVial.lastChild.style.backgroundColor))
       ) {
         moveAndRotateVial(selectedVial, vial);
         selectedVial.classList.remove("move-up");
@@ -83,7 +83,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
 
-      vial.addEventListener("click", () => moveVialCallback(vial));
+      vial.addEventListener("click", () => moveVialCallback(vial), false);
 
       container.appendChild(vial);
     }
@@ -102,13 +102,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const allEqual = (arr) => arr.every((val) => val === arr[0]);
 
-  function moveBackVial(vial) {
+  function moveBackVial(vial, dvial) {
     vial.style.zIndex = 0;
     vial.style.transition = "transform 0.5s";
     vial.style.transform = `translate(0, 0) rotate(0deg)`;
 
     vial.addEventListener("animationend", (event) => {
-      vial.addEventListener("click", () => moveVialCallback(vial));
+      vial.addEventListener("click", () => moveVialCallback(vial), false);
+      dvial.addEventListener("click", () => moveVialCallback(dvial), false);
     });
 
     if (done()) {
@@ -149,14 +150,15 @@ document.addEventListener("DOMContentLoaded", function () {
       ) {
         moveTopColor(fromVial, toVial);
       } else {
-        moveBackVial(fromVial);
+        moveBackVial(fromVial, toVial);
       }
     });
     toVial.appendChild(toAdd);
   }
 
   function moveAndRotateVial(fromVial, toVial) {
-    fromVial.removeEventListener("click", moveVialCallback);
+    fromVial.removeEventListener("click", ()=>moveVialCallback(fromVial), false);
+    toVial.removeEventListener("click", ()=>moveVialCallback(toVial), false);
     const fromRect = fromVial.getBoundingClientRect();
     const toRect = toVial.getBoundingClientRect();
     const translateX = toRect.left - fromRect.left - fromRect.width / 2;
