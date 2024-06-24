@@ -5,7 +5,9 @@ body {
   height: 100vh;
   margin: 0;
   background-color: #303030;
-  font-family: ui-sans-serif,system-ui,-apple-system,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+  font-family: ui-sans-serif, system-ui, -apple-system, system-ui, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   font-weight: 400;
   font-style: normal;
 }
@@ -78,14 +80,26 @@ body {
   border-radius: 50%;
 }
 
+.auxVialButton:after {
+  content: "";
+  position: absolute;
+  border: 1px solid #000000;
+  border-radius: 50%;
+
+  bottom: 3px;
+  left: 3px;
+  width: calc(100% - 1px);
+  height: calc(100% - 1px);
+}
+
 [data-rev="false"] {
-    background: repeating-linear-gradient(
-        -45deg,
-        #222,
-        #222 10px,
-        #333 10px,
-        #333 20px
-      )!important;
+  background: repeating-linear-gradient(
+    -45deg,
+    #222,
+    #222 10px,
+    #333 10px,
+    #333 20px
+  ) !important;
 }
 
 .vial.move-up {
@@ -163,10 +177,11 @@ body {
 
 .level {
   position: fixed;
-  font-size: 20rem;
-  bottom: -29rem;
+  font-size: 18rem;
+  bottom: -25rem;
   color: rgba(1, 1, 1, 0.2);
   left: 0;
+  pointer-events: none;
 }
 
 .videoContainer {
@@ -186,9 +201,9 @@ body {
   transition: fadeIn 1s;
   transform: rotate(1deg);
   outline: 1px solid #000;
-    outline-offset: -1rem;
-    background: #3f3f3f;
-    margin:5rem;
+  outline-offset: -1rem;
+  background: #3f3f3f;
+  margin: 5rem;
 }
 
 .modal-text {
@@ -234,4 +249,3 @@ body {
     z-index: 20000;
   }
 }
-
