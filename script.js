@@ -106,12 +106,7 @@ document.addEventListener("DOMContentLoaded", function () {
     vial.style.zIndex = 0;
     vial.style.transition = "transform 0.5s";
     vial.style.transform = `translate(0, 0) rotate(0deg)`;
-
-    vial.addEventListener("animationend", (event) => {
-      vial.addEventListener("click", () => moveVialCallback(vial), false);
-      dvial.addEventListener("click", () => moveVialCallback(dvial), false);
-    });
-
+    
     if (done()) {
       confetti({
         particleCount: 100,
