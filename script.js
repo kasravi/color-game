@@ -2,6 +2,13 @@ document.addEventListener("DOMContentLoaded", function () {
   let selectedVial = null;
   let done = () => false;
 
+  const isPrime = (num) => {
+    for (let i = 2, s = Math.sqrt(num); i <= s; i++) {
+      if (num % i === 0) return false;
+    }
+    return num > 1;
+  };
+
   const moveVialCallback = (vial) => {
     if (selectedVial === null) {
       vial.classList.add("move-up");
@@ -12,9 +19,10 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
       if (
         vial.children.length < vial.dataset.cap &&
-        (!vial.lastChild || (selectedVial.lastChild &&
-          vial.lastChild.style.backgroundColor ===
-            selectedVial.lastChild.style.backgroundColor))
+        (!vial.lastChild ||
+          (selectedVial.lastChild &&
+            vial.lastChild.style.backgroundColor ===
+              selectedVial.lastChild.style.backgroundColor))
       ) {
         moveAndRotateVial(selectedVial, vial);
         selectedVial.classList.remove("move-up");
@@ -25,6 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const generate = (seed) => {
     let rng = new Math.seedrandom(seed);
+    const isPrimeLevel = isPrime(seed);
     const container = document.getElementById("vialContainer");
     while (container.firstChild) {
       container.removeChild(container.lastChild);
@@ -80,6 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
           colors = colors.filter((c, i) => i !== colorIndex);
           colorSegment.style.backgroundColor = randomColor;
           colorSegment.style.maxHeight = vialHeight / colorNum + "px";
+          colorSegment.dataset.rev = isPrimeLevel? (j === colorNum - 1) : true;
           vial.appendChild(colorSegment);
         }
       }
@@ -107,7 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
     vial.style.zIndex = 0;
     vial.style.transition = "transform 0.5s";
     vial.style.transform = `translate(0, 0) rotate(0deg)`;
-    
+
     if (done()) {
       confetti({
         particleCount: 100,
@@ -146,6 +156,9 @@ document.addEventListener("DOMContentLoaded", function () {
       ) {
         moveTopColor(fromVial, toVial);
       } else {
+        if (fromVial.lastChild) {
+          fromVial.lastChild.dataset.rev = true;
+        }
         moveBackVial(fromVial, toVial);
       }
     });
@@ -153,8 +166,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function moveAndRotateVial(fromVial, toVial) {
-    fromVial.removeEventListener("click", ()=>moveVialCallback(fromVial), false);
-    toVial.removeEventListener("click", ()=>moveVialCallback(toVial), false);
     const fromRect = fromVial.getBoundingClientRect();
     const toRect = toVial.getBoundingClientRect();
     const translateX = toRect.left - fromRect.left - fromRect.width / 2;
@@ -266,7 +277,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       if (navigator.mediaDevices) {
         navigator.mediaDevices
-          .getUserMedia({video:true, facingMode: "user"})
+          .getUserMedia({ video: true, facingMode: "user" })
           .then(() => {
             camera.start();
           })
