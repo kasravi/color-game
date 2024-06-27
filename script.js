@@ -9,6 +9,14 @@ document.addEventListener("DOMContentLoaded", function () {
     return num > 1;
   };
 
+  if (!Array.prototype.last) {
+    Array.prototype.last = function () {
+      return this[this.length - 1];
+    };
+  }
+
+  const allEqual = (arr) => arr.every((val) => val === arr[0]);
+
   const moveVialCallback = (vial) => {
     if (selectedVial === null) {
       vial.classList.add("move-up");
@@ -48,7 +56,7 @@ document.addEventListener("DOMContentLoaded", function () {
       (a, i) => a.concat(Array(colorNum).fill(i)),
       []
     );
-
+    let test = [];
     for (let i = 0; i < vialNum + auxVialNum; i++) {
       const vial = document.createElement("div");
       vial.id = `vial-${i}`;
@@ -81,6 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         container.appendChild(addButton);
       } else if (i < vialNum - 2) {
+        test.push([]);
         for (let j = 0; j < colorNum; j++) {
           const colorSegment = document.createElement("div");
           colorSegment.classList.add("color-segment");
@@ -88,10 +97,13 @@ document.addEventListener("DOMContentLoaded", function () {
           const randomColor = "#" + colors[colorIndex];
           colors = colors.filter((c, i) => i !== colorIndex);
           colorSegment.style.backgroundColor = randomColor;
+          test.last().push(randomColor);
           colorSegment.style.maxHeight = vialHeight / colorNum + "px";
-          colorSegment.dataset.rev = isPrimeLevel? (j === colorNum - 1) : true;
+          colorSegment.dataset.rev = isPrimeLevel ? j === colorNum - 1 : true;
           vial.appendChild(colorSegment);
         }
+      } else if (i >= vialNum - 2 && i < vialNum) {
+        test.push([]);
       }
 
       vial.addEventListener("click", () => moveVialCallback(vial), false);
@@ -110,8 +122,6 @@ document.addEventListener("DOMContentLoaded", function () {
             allEqual([...f.children].map((c) => c.style.backgroundColor))
         );
   };
-
-  const allEqual = (arr) => arr.every((val) => val === arr[0]);
 
   function moveBackVial(vial, dvial) {
     vial.style.zIndex = 0;
@@ -203,96 +213,103 @@ document.addEventListener("DOMContentLoaded", function () {
   //landmark
   const isEyesClosed = (howlong, timeout) =>
     new Promise((resolve, reject) => {
-      const videoElement = document.getElementsByClassName("input_video")[0];
+      document.getElementById("closed-for").innerHTML = ``;
+      try {
+        const videoElement = document.getElementsByClassName("input_video")[0];
 
-      let eyeClosedStart = null;
-      let eyeOpenStart = null;
-      let totalTimeEyesClosed = 0;
-      let totalTimeEyesOpen = 0;
+        let eyeClosedStart = null;
+        let eyeOpenStart = null;
+        let totalTimeEyesClosed = 0;
+        let totalTimeEyesOpen = 0;
 
-      function onResults(results) {
-        if (results.multiFaceLandmarks) {
-          for (const landmarks of results.multiFaceLandmarks) {
-            const leftEye = [landmarks[159], landmarks[145]];
-            const rightEye = [landmarks[386], landmarks[374]];
+        function onResults(results) {
+          if (results.multiFaceLandmarks) {
+            for (const landmarks of results.multiFaceLandmarks) {
+              const leftEye = [landmarks[159], landmarks[145]];
+              const rightEye = [landmarks[386], landmarks[374]];
 
-            const leftEyeOpen = calculateEyeOpenness(leftEye);
-            const rightEyeOpen = calculateEyeOpenness(rightEye);
+              const leftEyeOpen = calculateEyeOpenness(leftEye);
+              const rightEyeOpen = calculateEyeOpenness(rightEye);
 
-            if (leftEyeOpen && rightEyeOpen) {
-              if (eyeClosedStart) {
-                totalTimeEyesClosed += Date.now() - eyeClosedStart;
-                eyeClosedStart = null;
-              }
-              if (!eyeOpenStart) {
-                eyeOpenStart = Date.now();
-              }
-            } else {
-              if (eyeOpenStart) {
-                totalTimeEyesOpen += Date.now() - eyeOpenStart;
-                eyeOpenStart = null;
-              }
-              if (!eyeClosedStart) {
-                eyeClosedStart = Date.now();
+              if (leftEyeOpen && rightEyeOpen) {
+                if (eyeClosedStart) {
+                  totalTimeEyesClosed += Date.now() - eyeClosedStart;
+                  eyeClosedStart = null;
+                }
+                if (!eyeOpenStart) {
+                  eyeOpenStart = Date.now();
+                }
+              } else {
+                if (eyeOpenStart) {
+                  totalTimeEyesOpen += Date.now() - eyeOpenStart;
+                  eyeOpenStart = null;
+                }
+                if (!eyeClosedStart) {
+                  eyeClosedStart = Date.now();
+                }
               }
             }
           }
+          if (totalTimeEyesClosed / 1000 > howlong) {
+            camera.stop();
+            resolve();
+          }
+
+          document.getElementById(
+            "closed-for"
+          ).innerHTML = `your eyes have been closed for  ${
+            totalTimeEyesClosed / 1000
+          } seconds`;
         }
-        if (totalTimeEyesClosed / 1000 > howlong) {
+
+        function calculateEyeOpenness(eyeLandmarks) {
+          const verticalDist =
+            Math.abs(eyeLandmarks[0].y - eyeLandmarks[1].y) * 100;
+          return verticalDist > 1;
+        }
+
+        const faceMesh = new FaceMesh({
+          locateFile: (file) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+          },
+        });
+        faceMesh.setOptions({
+          maxNumFaces: 1,
+          refineLandmarks: true,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5,
+        });
+        faceMesh.onResults(onResults);
+
+        const camera = new Camera(videoElement, {
+          onFrame: async () => {
+            await faceMesh.send({ image: videoElement });
+          },
+          width: 1280,
+          height: 720,
+        });
+        if (navigator.mediaDevices) {
+          navigator.mediaDevices
+            .getUserMedia({ video: true, facingMode: "user" })
+            .then(() => {
+              camera.start();
+            })
+            .catch(() => {
+              console.log("no camera");
+              setTimeout(() => {
+                resolve();
+              }, howlong * 1000);
+            });
+        }
+        setTimeout(() => {
           camera.stop();
           resolve();
-        }
-
-        document.getElementById(
-          "closed-for"
-        ).innerHTML = `your eyes have been closed for  ${
-          totalTimeEyesClosed / 1000
-        } seconds`;
+        }, timeout * 1000);
+      } catch (e) {
+        setTimeout(() => {
+          resolve();
+        }, howlong * 1000);
       }
-
-      function calculateEyeOpenness(eyeLandmarks) {
-        const verticalDist =
-          Math.abs(eyeLandmarks[0].y - eyeLandmarks[1].y) * 100;
-        return verticalDist > 1;
-      }
-
-      const faceMesh = new FaceMesh({
-        locateFile: (file) => {
-          return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
-        },
-      });
-      faceMesh.setOptions({
-        maxNumFaces: 1,
-        refineLandmarks: true,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5,
-      });
-      faceMesh.onResults(onResults);
-
-      const camera = new Camera(videoElement, {
-        onFrame: async () => {
-          await faceMesh.send({ image: videoElement });
-        },
-        width: 1280,
-        height: 720,
-      });
-      if (navigator.mediaDevices) {
-        navigator.mediaDevices
-          .getUserMedia({ video: true, facingMode: "user" })
-          .then(() => {
-            camera.start();
-          })
-          .catch(() => {
-            console.log("no camera");
-            setTimeout(() => {
-              resolve();
-            }, howlong * 1000);
-          });
-      }
-      setTimeout(() => {
-        camera.stop();
-        resolve();
-      }, timeout * 1000);
     });
 
   //////
