@@ -211,6 +211,15 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   //landmark
+
+  function toggleEyeState(w, o) {
+    const eye = document.getElementById(w + "eye");
+    if (o) eye.classList.remove("closed");
+    else {
+      eye.classList.add("closed");
+    }
+  }
+
   const isEyesClosed = (howlong, timeout) =>
     new Promise((resolve, reject) => {
       document.getElementById("closed-for").innerHTML = ``;
@@ -230,6 +239,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
               const leftEyeOpen = calculateEyeOpenness(leftEye);
               const rightEyeOpen = calculateEyeOpenness(rightEye);
+
+              toggleEyeState("l", leftEyeOpen);
+              toggleEyeState("r", rightEyeOpen);
 
               if (leftEyeOpen && rightEyeOpen) {
                 if (eyeClosedStart) {
@@ -257,9 +269,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
           document.getElementById(
             "closed-for"
-          ).innerHTML = `your eyes have been closed for  ${
+          ).innerHTML = `your eyes have been closed for  ${(
             totalTimeEyesClosed / 1000
-          } seconds`;
+          ).toFixed(2)} seconds`;
         }
 
         function calculateEyeOpenness(eyeLandmarks) {
@@ -317,11 +329,11 @@ document.addEventListener("DOMContentLoaded", function () {
     let t = document.getElementById("modal");
     t.classList.remove("fade-out");
     t.classList.add("fade-in");
-    await isEyesClosed(10, 20);
+    await isEyesClosed(100, 200);
     t.classList.add("fade-out");
     t.classList.remove("fade-in");
   };
-
+  checkEyeClosed();
   if (!getValueFromStorage("level")) {
     setValueInStorage("level", 1);
   }

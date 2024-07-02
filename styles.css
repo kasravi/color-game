@@ -177,8 +177,8 @@ body {
 
 .level {
   position: fixed;
-  font-size: 18rem;
-  bottom: -25rem;
+  font-size: 15rem;
+  bottom: -20rem;
   color: rgba(1, 1, 1, 0.2);
   left: 0;
   pointer-events: none;
@@ -248,4 +248,40 @@ body {
     opacity: 1;
     z-index: 20000;
   }
+}
+
+.eye {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #a0a0a0;
+  border-radius: 50%;
+  position: relative;
+  display: inline-block;
+  margin: 0.4rem;
+  transition: all 0.3s ease;
+}
+
+.pupil {
+  width: 0.5rem;
+  height: 0.5rem;
+  background-color: #a0a0a0;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.eye.closed {
+  width: 1rem;
+  height: 2px;
+  border-radius: 0;
+}
+
+.eye.closed .pupil {
+  display: none;
+}
+
+.eye-container {
+  height: 2rem;
 }
