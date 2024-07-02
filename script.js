@@ -93,8 +93,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     let vialNum = 14;
     let colorNum = 5;
-    let vialHeight = 140;
-    let vialWidth = 40;
+    let vialHeight = 9;
+    let vialWidth = 2.5;
     let auxVialNum = 1;
 
     const icons = [
@@ -132,15 +132,15 @@ document.addEventListener("DOMContentLoaded", function () {
     for (let i = 0; i < vialNum + auxVialNum; i++) {
       const vial = document.createElement("div");
       vial.id = `vial-${i}`;
-      vial.style.height = vialHeight + "px";
-      vial.style.width = vialWidth + "px";
+      vial.style.height = vialHeight + "rem";
+      vial.style.width = vialWidth + "rem";
       vial.classList.add("vial");
       vial.dataset.cap = colorNum;
       vial.dataset.maxCap = colorNum;
       if (i >= vialNum) {
         vial.id = "aux-vial";
-        vial.style.height = vialHeight / 5 + "px";
-        vial.style.width = vialWidth + "px";
+        vial.style.height = vialHeight / 5 + "rem";
+        vial.style.width = vialWidth + "rem";
         vial.style.borderColor = "#737373";
         vial.style.backgroundColor = "#737373";
         vial.dataset.cap = 0;
@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", function () {
               return;
             }
             vial.dataset.cap = cap + 1;
-            vial.style.height = ((cap + 1) * vialHeight) / 5 + "px";
+            vial.style.height = ((cap + 1) * vialHeight) / 5 + "rem";
             vial.style.borderColor = "#000000";
             vial.style.backgroundColor = "transparent";
           });
@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", function () {
           colors = colors.filter((c, i) => i !== colorIndex);
           colorSegment.style.backgroundColor = "#" + randomColor;
           test.last().push(randomColor);
-          colorSegment.style.maxHeight = vialHeight / colorNum + "px";
+          colorSegment.style.maxHeight = vialHeight / colorNum + "rem";
           colorSegment.dataset.rev = isPrimeLevel ? j === colorNum - 1 : true;
           colorSegment.dataset.icon = icons[colorPalette.indexOf(randomColor)];
           if (isColorBlind) {

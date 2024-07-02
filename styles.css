@@ -19,7 +19,8 @@ body {
   justify-content: center;
   gap: 20px;
   padding: 2rem;
-  overflow: visible;
+  padding-top: 4rem;
+  overflow-x:hidden;
 }
 
 @keyframes shrink {
