@@ -410,7 +410,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let t = document.getElementById("modal");
     t.classList.remove("fade-out");
     t.classList.add("fade-in");
-    await isEyesClosed(100, 200);
+    await isEyesClosed(10, 20);
     t.classList.add("fade-out");
     t.classList.remove("fade-in");
   };

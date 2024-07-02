@@ -1,4 +1,4 @@
-const version=0.4;
+const version=0.41;
 const staticCacheName = 'site-static-v2'
 const dynamicCacheName = 'site-dynamic-v1'
 const assets = [
