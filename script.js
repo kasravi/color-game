@@ -2,6 +2,49 @@ document.addEventListener("DOMContentLoaded", function () {
   let selectedVial = null;
   let done = () => false;
 
+  //drawer
+  document
+    .getElementsByTagName("html")[0]
+    .addEventListener("click", closeDrawer);
+  var drawerBtn = document.getElementById("drawer-button");
+  drawerBtn.addEventListener("click", toggleDrawer);
+
+  function toggleDrawer() {
+    var drawer = document.getElementById("myDrawer");
+    drawer.classList.toggle("open");
+  }
+
+  function closeDrawer(e) {
+    var drawer = document.getElementById("myDrawer");
+
+    var drawerBtn = document.getElementById("drawer-button");
+
+    if (drawer.contains(e.target) || drawerBtn.contains(e.target)) return;
+    drawer.classList.remove("open");
+  }
+  //
+
+  //config
+  let config = getValueFromStorage("config");
+  document.getElementById("color-blind").checked = (config||{})["color-blind"];
+  document.getElementById("color-blind").addEventListener("click", (e) => {
+    const checked = e.target.checked;
+    let config = getValueFromStorage("config")||{};
+    config["color-blind"] = checked;
+    setValueInStorage("config", config);
+    
+      [...document.getElementsByClassName("color-segment")].forEach((colorSegment)=>{
+      if(checked){
+        colorSegment.innerHTML = `<p class="color-segment-icon">${
+          colorSegment.dataset.icon
+        }</p>`;
+      }else{
+        colorSegment.innerHTML = ""
+      }
+    });
+  })
+  ///
+
   const isPrime = (num) => {
     for (let i = 2, s = Math.sqrt(num); i <= s; i++) {
       if (num % i === 0) return false;
@@ -41,6 +84,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const generate = (seed) => {
     let rng = new Math.seedrandom(seed);
+    const isColorBlind = document.getElementById("color-blind").checked;
+
     const isPrimeLevel = isPrime(seed);
     const container = document.getElementById("vialContainer");
     while (container.firstChild) {
@@ -52,7 +97,34 @@ document.addEventListener("DOMContentLoaded", function () {
     let vialWidth = 40;
     let auxVialNum = 1;
 
-    let colors = palette("mpn65", vialNum - 2).reduce(
+    const icons = [
+      "α",
+      "β",
+      "γ",
+      "δ",
+      "ε",
+      "ζ",
+      "η",
+      "θ",
+      "ι",
+      "κ",
+      "λ",
+      "μ",
+      "ν",
+      "ξ",
+      "ο",
+      "π",
+      "ρ",
+      "σ",
+      "τ",
+      "υ",
+      "φ",
+      "χ",
+      "ψ",
+      "ω",
+    ];
+    let colorPalette = palette("mpn65", vialNum - 2);
+    let colors = colorPalette.reduce(
       (a, i) => a.concat(Array(colorNum).fill(i)),
       []
     );
@@ -94,12 +166,18 @@ document.addEventListener("DOMContentLoaded", function () {
           const colorSegment = document.createElement("div");
           colorSegment.classList.add("color-segment");
           const colorIndex = Math.floor(rng() * colors.length);
-          const randomColor = "#" + colors[colorIndex];
+          const randomColor = colors[colorIndex];
           colors = colors.filter((c, i) => i !== colorIndex);
-          colorSegment.style.backgroundColor = randomColor;
+          colorSegment.style.backgroundColor = "#" + randomColor;
           test.last().push(randomColor);
           colorSegment.style.maxHeight = vialHeight / colorNum + "px";
           colorSegment.dataset.rev = isPrimeLevel ? j === colorNum - 1 : true;
+          colorSegment.dataset.icon = icons[colorPalette.indexOf(randomColor)];
+          if (isColorBlind) {
+            colorSegment.innerHTML = `<p class="color-segment-icon">${
+              icons[colorPalette.indexOf(randomColor)]
+            }</p>`;
+          }
           vial.appendChild(colorSegment);
         }
       } else if (i >= vialNum - 2 && i < vialNum) {
@@ -134,6 +212,9 @@ document.addEventListener("DOMContentLoaded", function () {
         spread: 70,
         origin: { y: 0.6 },
       });
+      let level = getValueFromStorage("level");
+      level++;
+      setValueInStorage("level", level);
       document.getElementById("nextBtn").style.display = "block";
     }
   }
@@ -202,12 +283,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Function to set a cookie
   function setValueInStorage(name, value, ns = "color-sort") {
-    localStorage.setItem(`${ns}-${name}`, value);
+    localStorage.setItem(`${ns}-${name}`, JSON.stringify(value));
   }
 
   // Function to get a cookie
   function getValueFromStorage(name, ns = "color-sort") {
-    return localStorage.getItem(`${ns}-${name}`);
+    return JSON.parse(localStorage.getItem(`${ns}-${name}`));
   }
 
   //landmark
@@ -333,16 +414,14 @@ document.addEventListener("DOMContentLoaded", function () {
     t.classList.add("fade-out");
     t.classList.remove("fade-in");
   };
-  checkEyeClosed();
+
   if (!getValueFromStorage("level")) {
     setValueInStorage("level", 1);
   }
-  generate(parseInt(getValueFromStorage("level")));
+  generate(getValueFromStorage("level"));
   document.getElementById("nextBtn").addEventListener("click", () => {
     checkEyeClosed().then(() => {
-      let level = parseInt(getValueFromStorage("level"));
-      level++;
-      setValueInStorage("level", level);
+      let level = getValueFromStorage("level");
       generate(level);
     });
   });

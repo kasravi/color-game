@@ -33,6 +33,31 @@
     ></script>
   </head>
   <body>
+    <div class="drawer" id="myDrawer">
+      <div class="drawer-content">
+        <div class="dummy"></div>
+        <div class="config-container">
+        <div class="installContainer">
+          <button id="install-button" class="installBtn button-53">Install</button>
+        </div>
+      </div>
+        <div class="config-container">
+          <p class="config-text">Color Blind?</p>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="color-blind" type="checkbox" checked />
+            <label class="tgl-btn" data-tg-off="Nope" data-tg-on="Yeah!" for="color-blind"></label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="drawer-toggle" id="drawer-button">
+      <div class="menu-icon-container">
+        <div class="bar1"></div>
+        <div class="bar2"></div>
+        <div class="bar3"></div>
+      </div>
+    </div>
+
     <div class="videoContainer">
       <video class="input_video" style="display: none"></video>
     </div>
@@ -54,9 +79,7 @@
     <div class="level">
       <p id="levelP"></p>
     </div>
-    <div class="installContainer">
-      <button id="install-button" class="installBtn button-53">Install</button>
-    </div>
+    
     <div class="container" id="vialContainer"></div>
     <div class="nextContainer">
       <button class="nextBtn button-53" id="nextBtn">Next</button>
