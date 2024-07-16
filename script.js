@@ -68,13 +68,14 @@ document.addEventListener("DOMContentLoaded", function () {
       vial.classList.remove("move-up");
       selectedVial = null;
     } else {
-      if (
+      if ((!selectedVial.dataset.moving || selectedVial.dataset.moving === "false") &&
         vial.children.length < vial.dataset.cap &&
         (!vial.lastChild ||
           (selectedVial.lastChild &&
             vial.lastChild.style.backgroundColor ===
               selectedVial.lastChild.style.backgroundColor))
       ) {
+        selectedVial.dataset.moving = true;
         moveAndRotateVial(selectedVial, vial);
         selectedVial.classList.remove("move-up");
         selectedVial = null;
@@ -201,10 +202,11 @@ document.addEventListener("DOMContentLoaded", function () {
         );
   };
 
-  function moveBackVial(vial, dvial) {
+  function moveBackVial(vial) {
     vial.style.zIndex = 0;
     vial.style.transition = "transform 0.5s";
     vial.style.transform = `translate(0, 0) rotate(0deg)`;
+    vial.dataset.moving = false;
 
     if (done()) {
       confetti({
