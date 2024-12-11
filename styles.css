@@ -194,10 +194,10 @@ body {
 
 .level {
   position: fixed;
-  font-size: 15rem;
-  bottom: -20rem;
+  font-size: 11rem;
+  bottom: -15rem;
   color: rgba(1, 1, 1, 0.2);
-  left: 0;
+  left: -2rem;
   pointer-events: none;
 }
 
