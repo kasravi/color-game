@@ -9,6 +9,14 @@ document.addEventListener("DOMContentLoaded", function () {
   var drawerBtn = document.getElementById("drawer-button");
   drawerBtn.addEventListener("click", toggleDrawer);
 
+  document
+    .getElementById("level-input")
+    .addEventListener("change", (event) => {
+      let level = parseInt(event.target.value);
+      setValueInStorage("level", level);
+      generate(level);
+    });
+
   function toggleDrawer() {
     var drawer = document.getElementById("myDrawer");
     drawer.classList.toggle("open");
