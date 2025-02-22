@@ -2,6 +2,7 @@
     "name": "Color Game",
     "short_name": "color-game",
     "id": "/color-game/",
+    "scope": "/color-game/",
     "start_url": "/color-game/",
     "display": "standalone",
     "background_color": "#ffffff",

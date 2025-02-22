@@ -1,163 +1,104 @@
-var seedrandom = require('seedrandom');
+export function solveGrid(initialGrid) {
+  const capacity = 5;
+  const visited = new Set();
+  let solution = null;
 
-function cleanGrid(grid) {
-  for (let idx = 0; idx < grid.length; idx++) {
-    if (grid[idx].length === 0) {
-      grid[idx] = Array(grid[0].length).fill(null);
+  // Convert the grid state to a unique string for memoization.
+  function stateToString(state) {
+    return state.map(tube => tube.join(",")).join("|");
+  }
+
+  // Check if a state is solved: every non-empty tube is full and contains only one color.
+  function isSolved(state) {
+    for (const tube of state) {
+      if (tube.length === 0) continue;
+      if (tube.length !== capacity) return false;
+      if (!tube.every(color => color === tube[0])) return false;
     }
-  }
-  return grid.map(line => line.map(ball => (ball === "" || ball === " ") ? null : ball));
-}
-
-function makeMove(grid, moveFrom, moveTo) {
-  if (moveFrom === moveTo) {
-    return null;
+    return true;
   }
 
-  function getLastBall(testTube) {
-    for (let idx = 0; idx < testTube.length; idx++) {
-      if (testTube[idx]) {
-        return [idx, testTube[idx]];
+  // Depth-first search recursive solver.
+  function dfs(state, moves) {
+    if (isSolved(state)) {
+      solution = [...moves];
+      return true;
+    }
+    const stateKey = stateToString(state);
+    if (visited.has(stateKey)) return false;
+    visited.add(stateKey);
+
+    // Try every possible move: from tube i (source) to tube j (destination)
+    for (let i = 0; i < state.length; i++) {
+      const src = state[i];
+      if (src.length === 0) continue;
+      // Optional: Skip if source is already solved (full and uniform)
+      if (src.length === capacity && src.every(color => color === src[0])) continue;
+
+      // Determine the contiguous group of same-colored balls at the top of the source.
+      const movingColor = src[src.length - 1];
+      let count = 1;
+      for (let k = src.length - 2; k >= 0; k--) {
+        if (src[k] === movingColor) count++;
+        else break;
       }
-    }
-    return [null, null];
-  }
 
-  function getEmptySlot(testTube) {
-    for (let idx = testTube.length - 1; idx >= 0; idx--) {
-      if (testTube[idx] === null) {
-        return idx;
+      for (let j = 0; j < state.length; j++) {
+        if (i === j) continue;
+        const dst = state[j];
+        if (dst.length === capacity) continue; // no capacity
+        // Valid move only if destination is empty or its top color matches the moving color.
+        if (dst.length > 0 && dst[dst.length - 1] !== movingColor) continue;
+
+        const emptySpace = capacity - dst.length;
+        if (emptySpace === 0) continue; // redundant check but safe
+
+        // Determine how many balls to pour (cannot pour more than available contiguous balls or empty spaces)
+        const numToMove = Math.min(count, emptySpace);
+
+        // Create a new state that reflects the move.
+        const newState = state.map((tube, index) => {
+          if (index === i) {
+            return tube.slice(0, tube.length - numToMove);
+          } else if (index === j) {
+            return tube.concat(Array(numToMove).fill(movingColor));
+          } else {
+            return tube.slice(); // clone to avoid mutation
+          }
+        });
+
+        moves.push([i, j]);
+        if (dfs(newState, moves)) return true;
+        moves.pop();
       }
-    }
-    return null;
-  }
-
-  function isMoveRedundant(testTubeFrom, testTubeTo, fromBall) {
-    const colorsTestTubeFrom = testTubeFrom.filter(i => i !== null);
-    const colorsTestTubeTo = testTubeTo.filter(i => i !== null);
-
-    if (new Set(colorsTestTubeFrom).size === 1 && new Set(colorsTestTubeTo).size === 1) {
-      return colorsTestTubeFrom.length > colorsTestTubeTo.length;
-    } else if (new Set(colorsTestTubeFrom).size === 1) {
-      return testTubeTo.every(slot => slot === null);
     }
     return false;
   }
 
-  try {
-    const fromTestTube = [...grid[moveFrom]];
-    const toTestTube = [...grid[moveTo]];
-
-    const [fromIdx, fromBall] = getLastBall(fromTestTube);
-
-    if (!isMoveRedundant(fromTestTube, toTestTube, fromBall)) {
-      const [, toBall] = getLastBall(toTestTube);
-      const emptySlot = getEmptySlot(toTestTube);
-
-      if (fromBall && emptySlot !== null && (fromBall === toBall || toBall === null)) {
-        fromTestTube[fromIdx] = null;
-        toTestTube[emptySlot] = fromBall;
-
-        const newGrid = [...grid];
-        newGrid[moveFrom] = fromTestTube;
-        newGrid[moveTo] = toTestTube;
-        return newGrid;
-      }
-      return null;
-    }
-  } catch (error) {
-    return null;
-  }
-  return null;
+  dfs(initialGrid, []);
+  return solution;
 }
 
-function checkVictory(grid) {
-  return grid.every(testTube => new Set(testTube).size === 1);
-}
+// ----------------------
+// Example usage:
 
-function solveGrid(grid, minMoves = false) {
-  let gridHistory = [cleanGrid(grid)];
-  let moves = [];
-  const allGridStates = [];
+// const game = [
+//   ["377eb8", "7f80cd", "af8d00", "66a61e", "66a61e"],
+//   ["984ea3", "b3e900", "7f80cd", "b3e900", "af8d00"],
+//   ["66a61e", "f781bf", "984ea3", "b3e900", "ff7f00"],
+//   ["a65628", "f781bf", "a65628", "377eb8", "377eb8"],
+//   ["ff7f00", "b3e900", "377eb8", "c42e60", "ff0029"],
+//   ["ff7f00", "af8d00", "ff7f00", "00d2d5", "ff0029"],
+//   ["7f80cd", "00d2d5", "a65628", "984ea3", "00d2d5"],
+//   ["f781bf", "377eb8", "984ea3", "ff0029", "ff7f00"],
+//   ["b3e900", "c42e60", "ff0029", "a65628", "00d2d5"],
+//   ["f781bf", "c42e60", "af8d00", "7f80cd", "a65628"],
+//   ["ff0029", "c42e60", "984ea3", "00d2d5", "66a61e"],
+//   ["f781bf", "af8d00", "7f80cd", "c42e60", "66a61e"],
+//   [], // first empty tube
+//   []  // second empty tube
+// ];
 
-  function iterOverGrid(level = 0) {
-    for (let testTubeFromIdx = 0; testTubeFromIdx < gridHistory[level].length; testTubeFromIdx++) {
-      for (let testTubeToIdx = 0; testTubeToIdx < gridHistory[level].length; testTubeToIdx++) {
-        if (checkVictory(gridHistory[gridHistory.length - 1])) {
-          return;
-        }
-
-        gridHistory = gridHistory.slice(0, level + 1);
-        moves = moves.slice(0, level + 1);
-
-        const gridMove = makeMove(gridHistory[level], testTubeFromIdx, testTubeToIdx);
-
-        if (gridMove && !allGridStates.some(state => JSON.stringify(state) === JSON.stringify(gridMove))) {
-          if (level === 0) {
-            allGridStates.length = 0; 
-          }
-
-          moves.push([testTubeFromIdx, testTubeToIdx]);
-          gridHistory.push(gridMove);
-          allGridStates.push(gridMove);
-          iterOverGrid(level + 1);
-        }
-      }
-    }
-  }
-
-  iterOverGrid();
-  return [gridHistory, moves];
-}
-
-
-if (!Array.prototype.last){
-    Array.prototype.last = function(){
-        return this[this.length - 1];
-    };
-  };
-
-const generate = (seed) => {
-    let rng = new seedrandom(seed);
-    let vialNum = 14;
-    let colorNum = 5;
-    let vialHeight = 140;
-    let vialWidth = 40;
-    let auxVialNum = 1;
-
-      
-    let colors = [...Array(vialNum - 2).keys()].reduce(
-      (a, i) => a.concat(Array(colorNum).fill(i)),
-      []
-    );
-      let test = [];
-    for (let i = 0; i < vialNum + auxVialNum; i++) {
-      
-      if (i >= vialNum) {
-        
-       
-      } else if (i < vialNum - 2) {
-        test.push([])
-        for (let j = 0; j < colorNum; j++) {
-
-          const colorIndex = Math.floor(rng() * colors.length);
-          const randomColor = "#" + colors[colorIndex];
-          colors = colors.filter((c, i) => i !== colorIndex);
-          test.last().push(randomColor)
-        }
-      } else if (i >= vialNum - 2 && i < vialNum) {
-        test.push([])
-      }
-
-    }
-
-    return test;
-  };
-
-  // Example usage
-
-  [...Array(1000).keys()].forEach(async kk=>{
-  game = generate(kk);
-const [g,moves] = solveGrid(game.map(arr => arr.reverse()));
-console.log(kk, moves.length);
-})
+// const solution = solveGrid(game);
+// console.log(solution);
+// The output is an array of moves, for example: [ [0,12], [1,13], ... ]

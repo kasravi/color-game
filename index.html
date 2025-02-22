@@ -2,6 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-512x512.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="manifest" href="manifest.json" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
@@ -54,6 +57,9 @@
             <input class="level-input" id="level-input" type="text" />
           </div>
         </div>
+        <div class="config-container">
+          <button id="solve-button" class="button-53">Solve</button>
+        </div>
       </div>
     </div>
     <div class="drawer-toggle" id="drawer-button">
@@ -103,6 +109,7 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     ></script>
+    <script type="module" src="solver.js"></script>
     <script type="module" src="script.js"></script>
     <script>
       if ("serviceWorker" in navigator) {

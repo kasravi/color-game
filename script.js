@@ -1,6 +1,10 @@
+import { solveGrid } from './solver.js';
+
 document.addEventListener("DOMContentLoaded", function () {
   let selectedVial = null;
   let done = () => false;
+  var game = null;
+  var solution = null;
 
   //drawer
   document
@@ -15,6 +19,43 @@ document.addEventListener("DOMContentLoaded", function () {
       let level = parseInt(event.target.value);
       setValueInStorage("level", level);
       generate(level);
+    });
+
+    const wait = (s) => new Promise(res => setTimeout(res, s * 1000));
+
+    document.getElementById("solve-button").addEventListener("click", async (event) => {
+      if (!solution) return;
+      await wait(1.5);
+    
+      for (let move of solution) {
+        console.log(move)
+        const srcVial = document.getElementById('vial-' + move[0]);
+        const dstVial = document.getElementById('vial-' + move[1]);
+        
+        // Get the current visible (top) ball color from the source vial.
+        let topBall = srcVial.lastElementChild;
+        if (!topBall) continue; // if no ball is visible, skip
+        const moveColor = topBall.style.backgroundColor;
+        
+        const waitForMoveFinished = async ()=>{
+          for(let i =0;i<40;i++){
+            if(([...document.getElementsByClassName("vial")].map(f=>f.dataset.moving)).some(f=>!!f)){
+              await wait(0.1)
+              continue
+            }
+            return true
+          }
+          return false
+        }
+        // Keep performing the move until the source vial's top ball changes.
+        while (srcVial.lastElementChild && 
+            srcVial.lastElementChild.style.backgroundColor === moveColor &&
+            dstVial.children.length<5 ) {
+          srcVial.click();
+          dstVial.click();
+          await waitForMoveFinished();
+        }
+      }
     });
 
   function toggleDrawer() {
@@ -196,6 +237,7 @@ document.addEventListener("DOMContentLoaded", function () {
       vial.addEventListener("click", () => moveVialCallback(vial), false);
 
       container.appendChild(vial);
+
     }
 
     document.getElementById("levelP").innerHTML = seed;
@@ -208,6 +250,10 @@ document.addEventListener("DOMContentLoaded", function () {
             f.children.length === colorNum &&
             allEqual([...f.children].map((c) => c.style.backgroundColor))
         );
+    
+    solve(test).then(f=>{
+      solution = f
+    })
   };
 
   function moveBackVial(vial) {
@@ -428,11 +474,25 @@ document.addEventListener("DOMContentLoaded", function () {
   if (!getValueFromStorage("level")) {
     setValueInStorage("level", 1);
   }
-  generate(getValueFromStorage("level"));
   document.getElementById("nextBtn").addEventListener("click", () => {
     checkEyeClosed().then(() => {
       let level = getValueFromStorage("level");
       generate(level);
     });
   });
+
+  document.getElementById("nextBtn").addEventListener("click", () => {
+    checkEyeClosed().then(() => {
+      let level = getValueFromStorage("level");
+      generate(level);
+    });
+  });
+
+  const solve = async (ga) => {
+    const moves = solveGrid(ga);
+    // console.log(JSON.stringify(ga),moves)
+    return moves;
+  }
+
+  generate(getValueFromStorage("level"));
 });
